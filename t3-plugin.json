@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "com.t3code.forgegraph",
+  "displayName": "ForgeGraph delivery tracking",
+  "version": "0.1.0",
+  "runtime": { "kind": "managed-app", "command": ["forgegraph-t3-plugin"], "restart": "on-failure" },
+  "contributes": {
+    "panels": [
+      { "id": "forgegraph.changes", "title": "Pull requests and changesets", "surface": "project" },
+      { "id": "forgegraph.deployments", "title": "Deployments", "surface": "thread.sidePanel" }
+    ],
+    "settings": [
+      { "id": "forgegraph.endpoint", "title": "ForgeGraph endpoint", "scope": "server", "field": { "kind": "text", "default": "https://git.forgegraf.com", "placeholder": "https://forgegraph.example" } },
+      { "id": "forgegraph.token", "title": "ForgeGraph token", "scope": "server", "field": { "kind": "text", "secret": true } },
+      { "id": "forgegraph.app", "title": "App slug", "scope": "project", "field": { "kind": "text", "placeholder": "my-app" } }
+    ],
+    "settingsPanels": [{ "id": "forgegraph.connection", "title": "ForgeGraph", "description": "Track PR checks, changesets, deployments, and health from the delivery graph.", "settingIds": ["forgegraph.endpoint", "forgegraph.token", "forgegraph.app"] }],
+    "hooks": ["thread.created", "turn.settled", "runtime.error"]
+  },
+  "capabilities": [
+    { "kind": "secrets.read", "names": ["FORGEGRAPH_TOKEN"] },
+    { "kind": "network.connect", "hosts": ["git.forgegraf.com"] },
+    { "kind": "filesystem.read", "roots": ["project.root"] },
+    { "kind": "events.read", "eventTypes": ["thread.created", "turn.settled", "runtime.error"], "projectIds": [] },
+    { "kind": "threads.read", "projectIds": [] },
+    { "kind": "ui.embed", "surfaces": ["project", "thread.sidePanel"] }
+  ]
+}

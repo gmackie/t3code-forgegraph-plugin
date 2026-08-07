@@ -1,0 +1,31 @@
+import { describe, expect, it } from "bun:test";
+import { createForgeGraphClient, summarizeDelivery } from "./forgegraph.ts";
+
+describe("ForgeGraph delivery client", () => {
+  it("uses the documented CLI commands and parses delivery records", async () => {
+    const calls: readonly string[][] = [];
+    const client = createForgeGraphClient(async (args) => {
+      (calls as string[][]).push([...args]);
+      if (args[0] === "pr") return JSON.stringify([{ id: "pr-1", title: "Ship", state: "open", checks: "passing" }]);
+      if (args[0] === "deploy") return JSON.stringify([{ id: "dep-1", stage: "staging", status: "active" }]);
+      return JSON.stringify({ app: "t3code", stages: ["staging"], deployments: [] });
+    });
+    await expect(client.listPullRequests()).resolves.toHaveLength(1);
+    await expect(client.listDeployments("staging")).resolves.toMatchObject([{ id: "dep-1" }]);
+    await expect(client.status()).resolves.toMatchObject({ app: "t3code" });
+    expect(calls).toEqual([["pr", "list", "--json"], ["deploy", "history", "--stage", "staging", "--json"], ["status", "--json"]]);
+  });
+
+  it("summarizes PR and deployment risk without mutating delivery state", () => {
+    expect(summarizeDelivery({
+      pullRequests: [
+        { id: "1", title: "A", state: "open", checks: "failing" },
+        { id: "2", title: "B", state: "merged", checks: "passing" },
+      ],
+      deployments: [
+        { id: "d1", stage: "staging", status: "deploying" },
+        { id: "d2", stage: "production", status: "failed" },
+      ],
+    })).toEqual({ openPullRequests: 1, failingChecks: 1, activeDeployments: 1, failedDeployments: 1 });
+  });
+});
