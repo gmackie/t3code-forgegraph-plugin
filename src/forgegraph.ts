@@ -58,6 +58,7 @@ export class DeliveryPollingCoordinator {
   #intervalSeconds: number;
   #timer: ReturnType<typeof setTimeout> | undefined;
   #running = false;
+  #lastSnapshot: DeliverySnapshot | undefined;
 
   constructor(input: {
     load: DeliverySnapshotLoader;
@@ -82,8 +83,13 @@ export class DeliveryPollingCoordinator {
 
   async refresh(): Promise<DeliverySnapshot> {
     const snapshot = await this.#load();
+    this.#lastSnapshot = snapshot;
     this.#onSnapshot(snapshot);
     return snapshot;
+  }
+
+  get snapshot(): DeliverySnapshot | undefined {
+    return this.#lastSnapshot;
   }
 
   start(): void {
