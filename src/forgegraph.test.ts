@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { createForgeGraphClient, summarizeDelivery } from "./forgegraph.ts";
+import { createForgeGraphClient, DeliveryPollingCoordinator, normalizePollingSeconds, summarizeDelivery } from "./forgegraph.ts";
 
 describe("ForgeGraph delivery client", () => {
   it("uses the documented CLI commands and parses delivery records", async () => {
@@ -27,5 +27,19 @@ describe("ForgeGraph delivery client", () => {
         { id: "d2", stage: "production", status: "failed" },
       ],
     })).toEqual({ openPullRequests: 1, failingChecks: 1, activeDeployments: 1, failedDeployments: 1 });
+  });
+
+  it("bounds refresh intervals and publishes each loaded snapshot", async () => {
+    expect(normalizePollingSeconds(1)).toBe(15);
+    expect(normalizePollingSeconds(99999)).toBe(3600);
+    const snapshots: unknown[] = [];
+    const coordinator = new DeliveryPollingCoordinator({
+      intervalSeconds: 1,
+      load: async () => ({ status: { stages: [], deployments: [] }, pullRequests: [], deployments: [] }),
+      onSnapshot: (snapshot) => snapshots.push(snapshot),
+    });
+    await coordinator.refresh();
+    expect(coordinator.intervalSeconds).toBe(15);
+    expect(snapshots).toHaveLength(1);
   });
 });

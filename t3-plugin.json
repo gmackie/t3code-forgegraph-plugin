@@ -12,9 +12,10 @@
     "settings": [
       { "id": "forgegraph.endpoint", "title": "ForgeGraph endpoint", "scope": "server", "field": { "kind": "text", "default": "https://git.forgegraf.com", "placeholder": "https://forgegraph.example" } },
       { "id": "forgegraph.token", "title": "ForgeGraph token", "scope": "server", "field": { "kind": "text", "secret": true } },
-      { "id": "forgegraph.app", "title": "App slug", "scope": "project", "field": { "kind": "text", "placeholder": "my-app" } }
+      { "id": "forgegraph.app", "title": "App slug", "scope": "project", "field": { "kind": "text", "placeholder": "my-app" } },
+      { "id": "forgegraph.polling-seconds", "title": "Refresh interval", "description": "How often delivery status is refreshed while the plugin is active.", "scope": "server", "field": { "kind": "number", "default": 60, "min": 15, "max": 3600, "step": 15 } }
     ],
-    "settingsPanels": [{ "id": "forgegraph.connection", "title": "ForgeGraph", "description": "Track PR checks, changesets, deployments, and health from the delivery graph.", "settingIds": ["forgegraph.endpoint", "forgegraph.token", "forgegraph.app"] }],
+    "settingsPanels": [{ "id": "forgegraph.connection", "title": "ForgeGraph", "description": "Track PR checks, changesets, deployments, and health from the delivery graph.", "settingIds": ["forgegraph.endpoint", "forgegraph.token", "forgegraph.app", "forgegraph.polling-seconds"] }],
     "hooks": ["thread.created", "turn.settled", "runtime.error"]
   },
   "capabilities": [
