@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { buildCockpitViewModel, createForgeGraphClient, DeliveryPollingCoordinator, normalizePollingSeconds, summarizeDelivery } from "./forgegraph.ts";
+import { buildCockpitViewModel, buildSurfaceModel, createForgeGraphClient, DeliveryPollingCoordinator, normalizePollingSeconds, summarizeDelivery } from "./forgegraph.ts";
 
 describe("ForgeGraph delivery client", () => {
   it("builds delivery cockpit navigation and blocker metrics", () => {
@@ -20,6 +20,19 @@ describe("ForgeGraph delivery client", () => {
     await expect(client.listDeployments("staging")).resolves.toMatchObject([{ id: "dep-1" }]);
     await expect(client.status()).resolves.toMatchObject({ app: "t3code" });
     expect(calls).toEqual([["pr", "list", "--json"], ["deploy", "history", "--stage", "staging", "--json"], ["status", "--json"]]);
+  });
+
+  it("builds native T3 delivery cards from a snapshot", () => {
+    const surface = buildSurfaceModel({
+      status: { app: "t3code", stages: ["staging"], deployments: [] },
+      pullRequests: [{ id: "pr-1", title: "Ship", state: "open", checks: "failing" }],
+      deployments: [{ id: "dep-1", stage: "staging", status: "active" }],
+    });
+    expect(surface.pluginId).toBe("com.t3code.forgegraph");
+    expect(surface.cards).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "failing-checks", value: "1" }),
+      expect.objectContaining({ id: "changes" }),
+    ]));
   });
 
   it("summarizes PR and deployment risk without mutating delivery state", () => {
