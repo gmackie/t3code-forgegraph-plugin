@@ -17,6 +17,9 @@
       { "id": "forgegraph.changes", "title": "Pull requests and changesets", "surface": "project" },
       { "id": "forgegraph.deployments", "title": "Deployments", "surface": "thread.sidePanel" }
     ],
+    "workflows": [
+      { "id": "forgegraph.delivery-review", "title": "Delivery review", "surface": "thread.main" }
+    ],
     "settings": [
       { "id": "forgegraph.endpoint", "title": "ForgeGraph endpoint", "scope": "server", "field": { "kind": "text", "default": "https://git.forgegraf.com", "placeholder": "https://forgegraph.example" } },
       { "id": "forgegraph.token", "title": "ForgeGraph token", "scope": "server", "field": { "kind": "text", "secret": true } },

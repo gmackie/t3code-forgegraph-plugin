@@ -1,10 +1,11 @@
-import { buildSurfaceModel, type DeliverySnapshot } from "./forgegraph.ts";
+import { buildReviewWorkflow, buildSurfaceModel, type DeliverySnapshot } from "./forgegraph.ts";
 
 export function createRpcHandler(coordinator: {
   snapshot: DeliverySnapshot | null;
   refresh(): Promise<DeliverySnapshot>;
 }) {
-  return async (method: string, payload?: { navigationId?: string; panelId?: string; actionId?: string }) => {
+  return async (method: string, payload?: { navigationId?: string; panelId?: string; actionId?: string; workflowId?: string }) => {
+    if (method === "workflow.get") return { ok: true as const, result: buildReviewWorkflow(coordinator.snapshot ?? (await coordinator.refresh())) };
     if (method !== "surface.get") return { ok: false as const, error: `unsupported ForgeGraph RPC method: ${method}` };
     const snapshot = coordinator.snapshot ?? (await coordinator.refresh());
     return { ok: true as const, result: buildSurfaceModel(snapshot, payload?.navigationId) };

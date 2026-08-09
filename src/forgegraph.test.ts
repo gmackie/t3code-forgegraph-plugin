@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { buildCockpitViewModel, buildSurfaceModel, createForgeGraphClient, DeliveryPollingCoordinator, normalizePollingSeconds, summarizeDelivery } from "./forgegraph.ts";
+import { buildCockpitViewModel, buildReviewWorkflow, buildSurfaceModel, createForgeGraphClient, DeliveryPollingCoordinator, normalizePollingSeconds, summarizeDelivery } from "./forgegraph.ts";
 
 describe("ForgeGraph delivery client", () => {
   it("builds delivery cockpit navigation and blocker metrics", () => {
@@ -7,6 +7,16 @@ describe("ForgeGraph delivery client", () => {
       navigation: ["overview", "changes", "checks", "deployments", "environments", "releases"],
       metrics: { openPullRequests: 2, failingChecks: 1, activeDeployments: 1, failedDeployments: 0 },
     });
+  });
+
+  it("builds the canonical review workflow from delivery evidence", () => {
+    const workflow = buildReviewWorkflow({
+      pullRequests: [{ id: "pr-1", title: "Ship", state: "open", checks: "failing" }],
+      deployments: [],
+    });
+    expect(workflow.currentStage).toBe("review");
+    expect(workflow.steps.find((step) => step.stage === "inspect")?.state).toBe("completed");
+    expect(workflow.steps.find((step) => step.stage === "approve")?.state).toBe("pending");
   });
   it("uses the documented CLI commands and parses delivery records", async () => {
     const calls: readonly string[][] = [];
