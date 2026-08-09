@@ -5,6 +5,14 @@
   "version": "0.1.0",
   "runtime": { "kind": "managed-app", "command": ["forgegraph-t3-plugin"], "restart": "on-failure" },
   "contributes": {
+    "navigation": [
+      { "id": "forgegraph.overview", "title": "Overview", "path": "/" },
+      { "id": "forgegraph.changes", "title": "Changes", "path": "/changes" },
+      { "id": "forgegraph.checks", "title": "Checks", "path": "/checks" },
+      { "id": "forgegraph.deployments", "title": "Deployments", "path": "/deployments" },
+      { "id": "forgegraph.environments", "title": "Environments", "path": "/environments" },
+      { "id": "forgegraph.releases", "title": "Releases", "path": "/releases" }
+    ],
     "panels": [
       { "id": "forgegraph.changes", "title": "Pull requests and changesets", "surface": "project" },
       { "id": "forgegraph.deployments", "title": "Deployments", "surface": "thread.sidePanel" }
