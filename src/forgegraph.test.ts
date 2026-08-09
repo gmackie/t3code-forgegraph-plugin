@@ -1,7 +1,13 @@
 import { describe, expect, it } from "bun:test";
-import { createForgeGraphClient, DeliveryPollingCoordinator, normalizePollingSeconds, summarizeDelivery } from "./forgegraph.ts";
+import { buildCockpitViewModel, createForgeGraphClient, DeliveryPollingCoordinator, normalizePollingSeconds, summarizeDelivery } from "./forgegraph.ts";
 
 describe("ForgeGraph delivery client", () => {
+  it("builds delivery cockpit navigation and blocker metrics", () => {
+    expect(buildCockpitViewModel({ openPullRequests: 2, failingChecks: 1, activeDeployments: 1, failedDeployments: 0 })).toEqual({
+      navigation: ["overview", "changes", "checks", "deployments", "environments", "releases"],
+      metrics: { openPullRequests: 2, failingChecks: 1, activeDeployments: 1, failedDeployments: 0 },
+    });
+  });
   it("uses the documented CLI commands and parses delivery records", async () => {
     const calls: readonly string[][] = [];
     const client = createForgeGraphClient(async (args) => {

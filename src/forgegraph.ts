@@ -47,6 +47,8 @@ export type DeliverySnapshot = {
   readonly pullRequests: readonly PullRequestRecord[];
   readonly deployments: readonly DeploymentRecord[];
 };
+export type DeliveryCockpitViewModel = { navigation: readonly string[]; metrics: ReturnType<typeof summarizeDelivery> };
+export function buildCockpitViewModel(metrics: ReturnType<typeof summarizeDelivery>): DeliveryCockpitViewModel { return { navigation: ["overview", "changes", "checks", "deployments", "environments", "releases"], metrics }; }
 
 export type DeliverySnapshotLoader = () => Promise<DeliverySnapshot>;
 
