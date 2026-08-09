@@ -54,21 +54,22 @@ export type ReviewWorkflowModel = {
   readonly currentStage: "inspect" | "context" | "propose" | "review" | "approve" | "execute" | "verify" | "respond";
   readonly refreshedAt: string;
   readonly steps: readonly { id: string; stage: ReviewWorkflowModel["currentStage"]; title: string; state: "pending" | "active" | "completed" | "blocked" | "failed"; detail?: string }[];
+  readonly evidence?: readonly { id: string; title: string; kind: "check" | "artifact" | "diff" | "log" | "link"; status: "neutral" | "positive" | "warning" | "negative"; detail?: string; url?: string }[];
   readonly actions?: readonly { id: string; title: string; tone?: "primary" | "secondary" | "destructive" }[];
 };
-export function buildReviewWorkflow(input: Pick<DeliverySnapshot, "pullRequests" | "deployments">): ReviewWorkflowModel {
+export function buildReviewWorkflow(input: Pick<DeliverySnapshot, "pullRequests" | "deployments">, state: { readonly approved?: boolean } = {}): ReviewWorkflowModel {
   const hasRisk = input.pullRequests.some((pr) => pr.checks === "failing") || input.deployments.some((deployment) => deployment.status === "failed");
   const steps = [
     { id: "inspect", stage: "inspect" as const, title: "Inspect delivery state", state: "completed" as const },
     { id: "context", stage: "context" as const, title: "Build evidence context", state: "completed" as const, detail: `${input.pullRequests.length} pull requests · ${input.deployments.length} deployments` },
     { id: "propose", stage: "propose" as const, title: "Propose delivery response", state: "completed" as const, detail: hasRisk ? "Risk-bearing changes need review." : "No delivery blockers detected." },
-    { id: "review", stage: "review" as const, title: "Review proposed response", state: "active" as const },
-    { id: "approve", stage: "approve" as const, title: "Approve execution", state: "pending" as const },
-    { id: "execute", stage: "execute" as const, title: "Execute delivery action", state: "pending" as const },
+    { id: "review", stage: "review" as const, title: "Review proposed response", state: state.approved ? "completed" as const : "active" as const },
+    { id: "approve", stage: "approve" as const, title: "Approve execution", state: state.approved ? "completed" as const : "pending" as const },
+    { id: "execute", stage: "execute" as const, title: "Execute delivery action", state: state.approved ? "active" as const : "pending" as const },
     { id: "verify", stage: "verify" as const, title: "Verify delivery result", state: "pending" as const },
     { id: "respond", stage: "respond" as const, title: "Prepare stakeholder response", state: "pending" as const },
   ];
-  return { pluginId: "com.t3code.forgegraph", workflowId: "forgegraph.delivery-review", title: "Delivery review", currentStage: "review", refreshedAt: new Date().toISOString(), steps, actions: [{ id: "approve", title: "Approve delivery action", tone: "primary" }] };
+  return { pluginId: "com.t3code.forgegraph", workflowId: "forgegraph.delivery-review", title: "Delivery review", currentStage: state.approved ? "execute" : "review", refreshedAt: new Date().toISOString(), steps, evidence: [{ id: "checks", title: "Delivery checks", kind: "check", status: hasRisk ? "negative" : "positive", detail: `${input.pullRequests.length} pull requests and ${input.deployments.length} deployments inspected` }], actions: state.approved ? [] : [{ id: "approve", title: "Approve delivery action", tone: "primary" }] };
 }
 export type DeliveryCockpitViewModel = { navigation: readonly string[]; metrics: ReturnType<typeof summarizeDelivery> };
 export type SurfaceCard =

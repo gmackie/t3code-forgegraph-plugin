@@ -17,6 +17,13 @@ describe("ForgeGraph delivery client", () => {
     expect(workflow.currentStage).toBe("review");
     expect(workflow.steps.find((step) => step.stage === "inspect")?.state).toBe("completed");
     expect(workflow.steps.find((step) => step.stage === "approve")?.state).toBe("pending");
+    expect(workflow.evidence?.[0]?.kind).toBe("check");
+  });
+
+  it("advances the review workflow after approval", () => {
+    const workflow = buildReviewWorkflow({ pullRequests: [], deployments: [] }, { approved: true });
+    expect(workflow.currentStage).toBe("execute");
+    expect(workflow.steps.find((step) => step.stage === "approve")?.state).toBe("completed");
   });
   it("uses the documented CLI commands and parses delivery records", async () => {
     const calls: readonly string[][] = [];

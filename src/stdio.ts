@@ -2,6 +2,16 @@ import { createForgeGraphClient, type DeliverySnapshot } from "./forgegraph.ts";
 import { createRpcHandler } from "./rpc.ts";
 
 let snapshot = JSON.parse(process.env.T3_PLUGIN_SNAPSHOT ?? '{"status":{"stages":[],"deployments":[]},"pullRequests":[],"deployments":[]}') as DeliverySnapshot;
+const statePath = process.env.T3_PLUGIN_STATE_FILE;
+let workflowState = { approved: false };
+if (statePath) {
+  try {
+    const stored = JSON.parse(await Bun.file(statePath).text()) as { workflowState?: { approved?: boolean } };
+    workflowState.approved = stored.workflowState?.approved === true;
+  } catch {
+    // A missing or invalid state file starts from the safe unapproved state.
+  }
+}
 const commandPrefix = process.env.T3_PLUGIN_COMMAND?.trim().split(/\s+/u).filter(Boolean) ?? [];
 const client = commandPrefix.length > 0
   ? createForgeGraphClient(async (args) => {
@@ -19,7 +29,9 @@ const refresh = async () => {
   }
   return snapshot;
 };
-const handler = createRpcHandler({ get snapshot() { return snapshot; }, refresh });
+const handler = createRpcHandler({ get snapshot() { return snapshot; }, refresh, workflowState, saveWorkflowState: async () => {
+  if (statePath) await Bun.write(statePath, JSON.stringify({ workflowState }));
+} });
 let buffer = "";
 process.stdin.setEncoding("utf8");
 process.stdin.on("data", (chunk) => {
