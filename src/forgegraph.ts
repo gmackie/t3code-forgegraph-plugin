@@ -18,6 +18,9 @@ function parseJson<T>(output: string, command: string): T {
 
 export function createForgeGraphClient(run: ForgeGraphCommandRunner) {
   return {
+    async execute(args: readonly string[]): Promise<string> {
+      return run(args);
+    },
     async listPullRequests(): Promise<readonly PullRequestRecord[]> {
       return parseJson<readonly PullRequestRecord[]>(await run(["pr", "list", "--json"]), "fg pr list");
     },
@@ -57,7 +60,7 @@ export type ReviewWorkflowModel = {
   readonly evidence?: readonly { id: string; title: string; kind: "check" | "artifact" | "diff" | "log" | "link"; status: "neutral" | "positive" | "warning" | "negative"; detail?: string; url?: string }[];
   readonly actions?: readonly { id: string; title: string; tone?: "primary" | "secondary" | "destructive" }[];
 };
-export function buildReviewWorkflow(input: Pick<DeliverySnapshot, "pullRequests" | "deployments">, state: { readonly approved?: boolean } = {}): ReviewWorkflowModel {
+export function buildReviewWorkflow(input: Pick<DeliverySnapshot, "pullRequests" | "deployments">, state: { readonly approved?: boolean; readonly executionRequested?: boolean } = {}): ReviewWorkflowModel {
   const hasRisk = input.pullRequests.some((pr) => pr.checks === "failing") || input.deployments.some((deployment) => deployment.status === "failed");
   const steps = [
     { id: "inspect", stage: "inspect" as const, title: "Inspect delivery state", state: "completed" as const },
@@ -65,11 +68,11 @@ export function buildReviewWorkflow(input: Pick<DeliverySnapshot, "pullRequests"
     { id: "propose", stage: "propose" as const, title: "Propose delivery response", state: "completed" as const, detail: hasRisk ? "Risk-bearing changes need review." : "No delivery blockers detected." },
     { id: "review", stage: "review" as const, title: "Review proposed response", state: state.approved ? "completed" as const : "active" as const },
     { id: "approve", stage: "approve" as const, title: "Approve execution", state: state.approved ? "completed" as const : "pending" as const },
-    { id: "execute", stage: "execute" as const, title: "Execute delivery action", state: state.approved ? "active" as const : "pending" as const },
-    { id: "verify", stage: "verify" as const, title: "Verify delivery result", state: "pending" as const },
+    { id: "execute", stage: "execute" as const, title: "Execute delivery action", state: state.executionRequested ? "completed" as const : state.approved ? "active" as const : "pending" as const },
+    { id: "verify", stage: "verify" as const, title: "Verify delivery result", state: state.executionRequested ? "active" as const : "pending" as const },
     { id: "respond", stage: "respond" as const, title: "Prepare stakeholder response", state: "pending" as const },
   ];
-  return { pluginId: "com.t3code.forgegraph", workflowId: "forgegraph.delivery-review", title: "Delivery review", currentStage: state.approved ? "execute" : "review", refreshedAt: new Date().toISOString(), steps, evidence: [{ id: "checks", title: "Delivery checks", kind: "check", status: hasRisk ? "negative" : "positive", detail: `${input.pullRequests.length} pull requests and ${input.deployments.length} deployments inspected` }], actions: state.approved ? [] : [{ id: "approve", title: "Approve delivery action", tone: "primary" }] };
+  return { pluginId: "com.t3code.forgegraph", workflowId: "forgegraph.delivery-review", title: "Delivery review", currentStage: state.executionRequested ? "verify" : state.approved ? "execute" : "review", refreshedAt: new Date().toISOString(), steps, evidence: [{ id: "checks", title: "Delivery checks", kind: "check", status: hasRisk ? "negative" : "positive", detail: `${input.pullRequests.length} pull requests and ${input.deployments.length} deployments inspected` }], actions: state.executionRequested ? [] : state.approved ? [{ id: "execute", title: "Execute delivery action", tone: "primary" }] : [{ id: "approve", title: "Approve delivery action", tone: "primary" }] };
 }
 export type DeliveryCockpitViewModel = { navigation: readonly string[]; metrics: ReturnType<typeof summarizeDelivery> };
 export type SurfaceCard =

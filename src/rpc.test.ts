@@ -19,4 +19,20 @@ describe("ForgeGraph RPC", () => {
     expect(saved).toBe(true);
     await expect(handler("workflow.get", { workflowId: "forgegraph.delivery-review" })).resolves.toMatchObject({ result: { currentStage: "execute" } });
   });
+
+  it("executes an approved delivery action through the plugin callback", async () => {
+    let executed = false;
+    let saved = false;
+    const handler = createRpcHandler({
+      snapshot: { status: { stages: [], deployments: [] }, pullRequests: [], deployments: [] },
+      refresh: async () => ({ status: { stages: [], deployments: [] }, pullRequests: [], deployments: [] }),
+      workflowState: { approved: true, executionRequested: false },
+      saveWorkflowState: async () => { saved = true; },
+      executeDelivery: async (input) => { executed = input.stage === "staging"; return { reference: "deploy-1" }; },
+    });
+    await expect(handler("action.execute", { actionId: "execute", input: { workflowId: "forgegraph.delivery-review", stage: "staging" } })).resolves.toMatchObject({ ok: true, result: { status: "accepted" } });
+    expect(executed).toBe(true);
+    expect(saved).toBe(true);
+    await expect(handler("workflow.get", { workflowId: "forgegraph.delivery-review" })).resolves.toMatchObject({ result: { currentStage: "verify" } });
+  });
 });
