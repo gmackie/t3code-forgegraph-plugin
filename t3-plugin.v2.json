@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "id": "com.t3code.forgegraph",
+  "displayName": "ForgeGraph",
+  "version": "0.2.0",
+  "mcpServer": {
+    "name": "forgegraph",
+    "transport": {
+      "type": "http",
+      "url": "https://forgegraf.com/api/mcp",
+      "headers": [],
+      "auth": { "type": "oauth", "scopes": ["forgegraph:read"] }
+    },
+    "variables": []
+  },
+  "contributes": {
+    "panels": [
+      { "id": "forgegraph.overview", "title": "Delivery overview", "scope": "project", "resourceUri": "ui://forgegraph/overview" },
+      { "id": "forgegraph.changes", "title": "Changes", "scope": "project", "resourceUri": "ui://forgegraph/changes" },
+      { "id": "forgegraph.checks", "title": "Checks", "scope": "project", "resourceUri": "ui://forgegraph/checks" }
+    ],
+    "commands": [
+      { "id": "forgegraph.open-overview", "title": "ForgeGraph: Open delivery overview", "panel": "forgegraph.overview" },
+      { "id": "forgegraph.open-changes", "title": "ForgeGraph: Open changes", "panel": "forgegraph.changes" },
+      { "id": "forgegraph.open-checks", "title": "ForgeGraph: Open checks", "panel": "forgegraph.checks" }
+    ]
+  },
+  "t3Tools": []
+}
