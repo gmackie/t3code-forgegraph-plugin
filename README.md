@@ -2,9 +2,9 @@
 
 ForgeGraph delivery tracking for T3 Code.
 
-## MCP-native (v2, draft): T3CODE-79
+## Plugin (manifest v2)
 
-The plugin is the manifest `t3-plugin.v2.json` plus ForgeGraph's **hosted** MCP
+The plugin is the manifest `t3-plugin.json` plus ForgeGraph's **hosted** MCP
 server, `https://forgegraf.com/api/mcp`. It has no local process:
 
 - **Tools:** agents get ForgeGraph's read-only tools in every session through
@@ -19,8 +19,10 @@ server, `https://forgegraf.com/api/mcp`. It has no local process:
 - **Panels:** the three views are `project` panels. Opened without a tool
   result, a view asks for a workspace and app.
 
-`t3-plugin.json` and `src/{stdio,rpc,forgegraph}.ts` are the v1 managed-app
-plugin. They stay until T3's hard cutover (T3CODE-74 P6).
+Install it from Settings → Plugins → MCP plugins with this repository's
+directory. Panel and command ids are local to the plugin (`overview`, not
+`forgegraph.overview`); T3 rejects dotted ids. The v1 managed-app plugin was
+removed with T3's cutover (T3CODE-82).
 
 ### Dev MCP Apps host
 

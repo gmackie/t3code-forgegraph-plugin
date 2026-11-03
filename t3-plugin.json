@@ -1,40 +1,60 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "com.t3code.forgegraph",
-  "displayName": "ForgeGraph delivery tracking",
-  "version": "0.1.0",
-  "runtime": { "kind": "managed-app", "command":["bun","src/stdio.ts"], "restart": "on-failure" },
-  "contributes": {
-    "navigation": [
-      { "id": "forgegraph.overview", "title": "Overview", "path": "/" },
-      { "id": "forgegraph.changes", "title": "Changes", "path": "/changes" },
-      { "id": "forgegraph.checks", "title": "Checks", "path": "/checks" },
-      { "id": "forgegraph.deployments", "title": "Deployments", "path": "/deployments" },
-      { "id": "forgegraph.environments", "title": "Environments", "path": "/environments" },
-      { "id": "forgegraph.releases", "title": "Releases", "path": "/releases" }
-    ],
-    "panels": [
-      { "id": "forgegraph.changes", "title": "Pull requests and changesets", "surface": "project" },
-      { "id": "forgegraph.deployments", "title": "Deployments", "surface": "thread.sidePanel" }
-    ],
-    "workflows": [
-      { "id": "forgegraph.delivery-review", "title": "Delivery review", "surface": "thread.main" }
-    ],
-    "settings": [
-      { "id": "forgegraph.endpoint", "title": "ForgeGraph endpoint", "scope": "server", "field": { "kind": "text", "default": "https://git.forgegraf.com", "placeholder": "https://forgegraph.example" } },
-      { "id": "forgegraph.token", "title": "ForgeGraph token", "scope": "server", "field": { "kind": "text", "secret": true } },
-      { "id": "forgegraph.app", "title": "App slug", "scope": "project", "field": { "kind": "text", "placeholder": "my-app" } },
-      { "id": "forgegraph.polling-seconds", "title": "Refresh interval", "description": "How often delivery status is refreshed while the plugin is active.", "scope": "server", "field": { "kind": "number", "default": 60, "min": 15, "max": 3600, "step": 15 } }
-    ],
-    "settingsPanels": [{ "id": "forgegraph.connection", "title": "ForgeGraph", "description": "Track PR checks, changesets, deployments, and health from the delivery graph.", "settingIds": ["forgegraph.endpoint", "forgegraph.token", "forgegraph.app", "forgegraph.polling-seconds"] }],
-    "hooks": ["thread.created", "turn.settled", "runtime.error"]
+  "displayName": "ForgeGraph",
+  "version": "0.2.0",
+  "mcpServer": {
+    "name": "forgegraph",
+    "transport": {
+      "type": "http",
+      "url": "https://forgegraf.com/api/mcp",
+      "headers": [],
+      "auth": {
+        "type": "oauth",
+        "scopes": [
+          "forgegraph:read"
+        ]
+      }
+    }
   },
-  "capabilities": [
-    { "kind": "secrets.read", "names": ["FORGEGRAPH_TOKEN"] },
-    { "kind": "network.connect", "hosts": ["git.forgegraf.com"] },
-    { "kind": "filesystem.read", "roots": ["project.root"] },
-    { "kind": "events.read", "eventTypes": ["thread.created", "turn.settled", "runtime.error"], "projectIds": [] },
-    { "kind": "threads.read", "projectIds": [] },
-    { "kind": "ui.embed", "surfaces": ["project", "thread.sidePanel"] }
-  ]
+  "contributes": {
+    "panels": [
+      {
+        "id": "overview",
+        "title": "Delivery overview",
+        "scope": "project",
+        "resourceUri": "ui://forgegraph/overview"
+      },
+      {
+        "id": "changes",
+        "title": "Changes",
+        "scope": "project",
+        "resourceUri": "ui://forgegraph/changes"
+      },
+      {
+        "id": "checks",
+        "title": "Checks",
+        "scope": "project",
+        "resourceUri": "ui://forgegraph/checks"
+      }
+    ],
+    "commands": [
+      {
+        "id": "open-overview",
+        "title": "ForgeGraph: Open delivery overview",
+        "panel": "overview"
+      },
+      {
+        "id": "open-changes",
+        "title": "ForgeGraph: Open changes",
+        "panel": "changes"
+      },
+      {
+        "id": "open-checks",
+        "title": "ForgeGraph: Open checks",
+        "panel": "checks"
+      }
+    ]
+  },
+  "t3Tools": []
 }

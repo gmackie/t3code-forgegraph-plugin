@@ -1,12 +1,11 @@
 {
   "name": "@t3code/forgegraph-plugin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit",
-    "start": "bun src/stdio.ts",
     "dev:host": "bun dev/host/server.ts"
   },
   "devDependencies": {

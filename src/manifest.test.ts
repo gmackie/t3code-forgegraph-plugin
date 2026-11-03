@@ -2,18 +2,17 @@ import { describe, expect, it } from "bun:test";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
-import manifest from "../t3-plugin.v2.json" with { type: "json" };
+import manifest from "../t3-plugin.json" with { type: "json" };
 import { toolCallableByApp, toolResourceUri } from "./host/backend.ts";
 import { validateManifestV2 } from "./manifest.ts";
 
-describe("draft v2 manifest", () => {
-  it("matches the approved T3CODE-74 shape", () => {
+describe("v2 manifest", () => {
+  it("matches the shape T3 installs", () => {
     expect(validateManifestV2(manifest)).toEqual([]);
   });
 
   it("reaches the hosted server over OAuth, with no stored token and no T3 callbacks", () => {
     expect(manifest.mcpServer.transport).toEqual({ type: "http", url: "https://forgegraf.com/api/mcp", headers: [], auth: { type: "oauth", scopes: ["forgegraph:read"] } });
-    expect(manifest.mcpServer.variables).toEqual([]);
     expect(manifest.t3Tools).toEqual([]);
   });
 
@@ -21,6 +20,8 @@ describe("draft v2 manifest", () => {
     expect(validateManifestV2({ ...manifest, runtime: { kind: "managed-app" } })).toContain("runtime is a v1 field");
     expect(validateManifestV2({ ...manifest, contributes: { ...manifest.contributes, commands: [{ id: "x", title: "X", panel: "nope" }] } })).toContain("x: unknown panel nope");
     expect(validateManifestV2({ ...manifest, mcpServer: { ...manifest.mcpServer, name: "t3-code" } })).toContain("mcpServer.name must be a Tools server name");
+    const dotted = { ...manifest.contributes.panels[0]!, id: "forgegraph.overview" };
+    expect(validateManifestV2({ ...manifest, contributes: { panels: [dotted], commands: [] } })[0]).toStartWith("forgegraph.overview: panel id must match");
   });
 });
 
