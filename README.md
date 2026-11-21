@@ -9,15 +9,21 @@ server, `https://forgegraf.com/api/mcp`. It has no local process:
 
 - **Tools:** agents get ForgeGraph's read-only tools in every session through
   Settings → Tools. The view tools are `get_delivery_overview`,
-  `list_app_changes` and `get_changeset_checks`.
+  `list_app_changes`, `get_changeset_checks`, and `get_ci_snapshot` and
+  `ci_watch` for the live CI view.
 - **UI:** the MCP Apps views `ui://forgegraph/overview`, `/changes` and
   `/checks` are served by the same server (ForgeGraph FORGE-282). A view
   reaches ForgeGraph only through the host bridge (`tools/call`), so it needs
-  no token, network access or CSP domains.
+  no token, network access or CSP domains. The exception is
+  `ui://forgegraph/ci-live` (ForgeGraph FORGE-391/403): it also opens one
+  WebSocket to `wss://forgegraf.com/api/live`, which its resource declares in
+  `_meta.ui.csp.connectDomains`, using a single-use ticket from the app-only
+  tool `ci_live_connect`, and follows a changeset's CI jobs as they change.
 - **Auth:** OAuth (`forgegraph:read`). T3 does discovery, registration, PKCE
   and refresh (T3CODE-80). No token is stored in the manifest.
-- **Panels:** the three views are `project` panels. Opened without a tool
-  result, a view asks for a workspace and app.
+- **Panels:** the four views (overview, changes, checks, live CI) are
+  `project` panels. Opened without a tool result, a view asks for a workspace
+  and app; the live CI panel then asks for a change (T3CODE-124).
 
 Install it from Settings → Plugins → MCP plugins with this repository's
 directory. Panel and command ids are local to the plugin (`overview`, not
