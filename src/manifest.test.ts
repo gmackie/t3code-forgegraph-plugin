@@ -11,6 +11,11 @@ describe("v2 manifest", () => {
     expect(validateManifestV2(manifest)).toEqual([]);
   });
 
+  it("offers the live CI view as a panel with a command (T3CODE-124)", () => {
+    expect(manifest.contributes.panels.find((p) => p.id === "ci-live")).toEqual({ id: "ci-live", title: "Live CI", scope: "project", resourceUri: "ui://forgegraph/ci-live" });
+    expect(manifest.contributes.commands.find((c) => c.panel === "ci-live")?.id).toBe("open-ci-live");
+  });
+
   it("reaches the hosted server over OAuth, with no stored token and no T3 callbacks", () => {
     expect(manifest.mcpServer.transport).toEqual({ type: "http", url: "https://forgegraf.com/api/mcp", headers: [], auth: { type: "oauth", scopes: ["forgegraph:read"] } });
     expect(manifest.t3Tools).toEqual([]);

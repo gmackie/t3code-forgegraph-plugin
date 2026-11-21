@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "id": "com.t3code.forgegraph",
   "displayName": "ForgeGraph",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "mcpServer": {
     "name": "forgegraph",
     "transport": {
@@ -36,6 +36,12 @@
         "title": "Checks",
         "scope": "project",
         "resourceUri": "ui://forgegraph/checks"
+      },
+      {
+        "id": "ci-live",
+        "title": "Live CI",
+        "scope": "project",
+        "resourceUri": "ui://forgegraph/ci-live"
       }
     ],
     "commands": [
@@ -53,6 +59,11 @@
         "id": "open-checks",
         "title": "ForgeGraph: Open checks",
         "panel": "checks"
+      },
+      {
+        "id": "open-ci-live",
+        "title": "ForgeGraph: Open live CI",
+        "panel": "ci-live"
       }
     ]
   },
